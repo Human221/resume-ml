@@ -10,6 +10,22 @@ pip install -r requirements-train.txt
 
 ### 2. Подготовка данных
 
+Есть два варианта источника данных:
+
+#### Вариант A: Hugging Face датасет (рекомендуется)
+
+Используйте датасет `evilfreelancer/headhunter` с Hugging Face:
+
+```bash
+# Проверьте доступные splits
+python download_hf_dataset.py --dataset evilfreelancer/headhunter --action list
+
+# Посмотрите образцы данных
+python download_hf_dataset.py --dataset evilfreelancer/headhunter --action sample --num-samples 5
+```
+
+#### Вариант B: Локальный CSV файл
+
 Убедитесь, что файл с вакансиями (`IT_vacancies_full 2.csv`) доступен на сервере Cloud.ru.
 
 ### 3. Настройка переменных окружения
@@ -17,6 +33,9 @@ pip install -r requirements-train.txt
 Добавьте в `.env`:
 ```env
 MODEL_NAME=IlyaGusev/saiga_mistral_7b_merged
+# Для Hugging Face:
+HF_DATASET=evilfreelancer/headhunter
+# Или для CSV:
 VACANCIES_CSV_PATH=IT_vacancies_full 2.csv
 ```
 
@@ -28,6 +47,21 @@ VACANCIES_CSV_PATH=IT_vacancies_full 2.csv
 2. Загрузите файлы проекта
 3. Запустите ячейку:
 
+**С Hugging Face датасетом (рекомендуется):**
+```python
+!python train_model.py \
+    --model-name IlyaGusev/saiga_mistral_7b_merged \
+    --use-hf \
+    --hf-dataset evilfreelancer/headhunter \
+    --hf-split train \
+    --output-dir ./models/finetuned \
+    --num-epochs 3 \
+    --batch-size 4 \
+    --learning-rate 2e-5 \
+    --max-samples 1000
+```
+
+**С локальным CSV файлом:**
 ```python
 !python train_model.py \
     --model-name IlyaGusev/saiga_mistral_7b_merged \
@@ -45,6 +79,19 @@ VACANCIES_CSV_PATH=IT_vacancies_full 2.csv
 2. Перейдите в директорию проекта
 3. Запустите обучение:
 
+**С Hugging Face датасетом:**
+```bash
+python train_model.py \
+    --model-name IlyaGusev/saiga_mistral_7b_merged \
+    --use-hf \
+    --hf-dataset evilfreelancer/headhunter \
+    --output-dir ./models/finetuned \
+    --num-epochs 3 \
+    --batch-size 4 \
+    --learning-rate 2e-5
+```
+
+**С локальным CSV файлом:**
 ```bash
 python train_model.py \
     --model-name IlyaGusev/saiga_mistral_7b_merged \
@@ -70,7 +117,10 @@ python train_model.py \
 ### Основные параметры
 
 - `--model-name`: Базовая модель (по умолчанию: `IlyaGusev/saiga_mistral_7b_merged`)
-- `--csv-path`: Путь к CSV файлу с вакансиями
+- `--use-hf`: Использовать Hugging Face датасет вместо CSV
+- `--hf-dataset`: Название датасета на Hugging Face (по умолчанию: `evilfreelancer/headhunter`)
+- `--hf-split`: Split датасета для загрузки (по умолчанию: `train`)
+- `--csv-path`: Путь к CSV файлу с вакансиями (если не используется `--use-hf`)
 - `--output-dir`: Директория для сохранения модели (по умолчанию: `./models/finetuned`)
 - `--num-epochs`: Количество эпох (по умолчанию: 3)
 - `--batch-size`: Размер батча (по умолчанию: 4, зависит от GPU памяти)

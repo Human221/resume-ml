@@ -172,13 +172,31 @@ resume-ml/
 # Установите зависимости для обучения
 pip install -r requirements-train.txt
 
-# Запустите обучение
+# Обучение с датасетом Hugging Face (рекомендуется)
+python train_model.py \
+    --model-name IlyaGusev/saiga_mistral_7b_merged \
+    --use-hf \
+    --hf-dataset evilfreelancer/headhunter \
+    --output-dir ./models/finetuned \
+    --num-epochs 3 \
+    --batch-size 4
+
+# Или с локальным CSV файлом
 python train_model.py \
     --model-name IlyaGusev/saiga_mistral_7b_merged \
     --csv-path "IT_vacancies_full 2.csv" \
     --output-dir ./models/finetuned \
     --num-epochs 3 \
     --batch-size 4
+```
+
+**Проверка датасета Hugging Face:**
+```bash
+# Посмотреть доступные splits
+python download_hf_dataset.py --dataset evilfreelancer/headhunter --action list
+
+# Посмотреть образцы данных
+python download_hf_dataset.py --dataset evilfreelancer/headhunter --action sample
 ```
 
 Подробные инструкции см. в [TRAINING.md](TRAINING.md)
