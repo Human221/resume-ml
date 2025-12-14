@@ -1,0 +1,82 @@
+{
+  "tools": [
+    {
+      "name": "search_vacancies",
+      "description": "Поиск вакансий по заданным критериям (название, зарплата, опыт, регион)",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "description": "Поисковый запрос (название должности, ключевые слова)"
+          },
+          "min_salary": {
+            "type": "number",
+            "description": "Минимальная зарплата"
+          },
+          "max_salary": {
+            "type": "number",
+            "description": "Максимальная зарплата"
+          },
+          "experience": {
+            "type": "string",
+            "description": "Требуемый опыт работы"
+          },
+          "area": {
+            "type": "string",
+            "description": "Регион/город"
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Максимальное количество результатов (1-100)",
+            "default": 10,
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": ["query"]
+      }
+    },
+    {
+      "name": "get_vacancy_statistics",
+      "description": "Получение статистики по вакансиям (средняя зарплата, топ ролей, регионов)",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "description": "Профессиональная роль для фильтрации"
+          },
+          "area": {
+            "type": "string",
+            "description": "Регион для фильтрации"
+          },
+          "specialization": {
+            "type": "string",
+            "description": "Специализация для фильтрации"
+          }
+        }
+      }
+    },
+    {
+      "name": "compare_vacancies",
+      "description": "Сравнение нескольких вакансий по основным параметрам",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "vacancy_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Список ID вакансий для сравнения (2-5 вакансий)",
+            "minItems": 2,
+            "maxItems": 5
+          }
+        },
+        "required": ["vacancy_ids"]
+      }
+    }
+  ]
+}
+

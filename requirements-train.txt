@@ -1,0 +1,14 @@
+# Базовые зависимости
+fastmcp>=0.9.0
+pydantic>=2.0.0
+httpx>=0.25.0
+mcp>=0.9.0
+python-dotenv>=1.0.0
+
+# Зависимости для обучения модели
+torch>=2.0.0
+transformers>=4.35.0
+datasets>=2.14.0
+accelerate>=0.24.0
+peft>=0.6.0
+
