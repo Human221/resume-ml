@@ -1,254 +1,144 @@
-# HR-агент для анализа вакансий
+# AI Agent for Vacancy Analysis
 
-Бизнес-ориентированный AI-агент для автоматизации работы HR-отделов с вакансиями. Агент использует MCP-серверы для интеграции с данными о вакансиях и Evolution Foundation Models для обработки естественного языка.
+AI agent for searching, analyzing, and comparing job vacancies through an MCP-based tool layer and an LLM API.
 
-## 🎯 Бизнес-ценность
+> Educational project developed for the Changellenge >> / Cloud.ru case **"MCP for Business AI Transformation"**.
 
-- **Экономия времени**: Автоматизация поиска и анализа вакансий экономит до 2-3 часов в день HR-менеджерам
-- **Улучшение качества найма**: Быстрый анализ рынка и сравнение предложений помогает принимать обоснованные решения
-- **Масштабируемость**: Легко интегрируется в существующие HR-процессы компаний любого размера
+## Overview
 
-## 🏗️ Архитектура
+The project combines an LLM-powered agent with an MCP server that exposes structured vacancy operations. A user sends a request in natural language; the agent decides which tool to use, retrieves structured data, and generates the final response.
 
-Решение состоит из двух основных компонентов:
+### Core capabilities
 
-1. **MCP-сервер** (`mcp_server/vacancies_mcp.py`) - предоставляет стандартизированный интерфейс для работы с данными о вакансиях
-2. **AI-агент** (`agent/hr_vacancies_agent.py`) - обрабатывает запросы пользователей на естественном языке и использует MCP-сервер для получения данных
+- Search vacancies by role, salary, experience, and location
+- Calculate vacancy statistics
+- Compare several vacancies
+- Connect an LLM to external tools through MCP
+- Return responses in an A2A-compatible structure
+- Validate tool inputs with Pydantic
+- Handle API and network errors
 
-## 📋 Функциональность
+## Architecture
 
-### Доступные инструменты MCP:
+```text
+User request
+     |
+     v
++----------------------+
+|   HR AI Agent        |
+|   Python + LLM API   |
++----------+-----------+
+           |
+           | MCP
+           v
++----------------------+
+|   Vacancy MCP Server |
+|   Search / Stats /   |
+|   Comparison tools   |
++----------+-----------+
+           |
+           v
+     Vacancy dataset
+```
 
-1. **search_vacancies** - Поиск вакансий по критериям:
-   - Название должности / ключевые слова
-   - Диапазон зарплаты
-   - Требуемый опыт
-   - Регион/город
-   - Ограничение количества результатов
+### Main components
 
-2. **get_vacancy_statistics** - Получение статистики:
-   - Общее количество вакансий
-   - Средняя зарплата
-   - Диапазон зарплат
-   - Топ профессиональных ролей
-   - Топ регионов
+- `agent/hr_vacancies_agent.py` — asynchronous agent, LLM integration, tool calling, and A2A response formatting
+- `mcp_server/vacancies_mcp.py` — MCP server exposing vacancy operations
+- `test_agent.py` / `test_mcp.py` — basic project tests
 
-3. **compare_vacancies** - Сравнение вакансий:
-   - Сравнение до 5 вакансий одновременно
-   - Анализ по зарплате, опыту, региону, графику работы
+## Tech Stack
 
-## 🚀 Установка и настройка
+**Language:** Python  
+**AI / LLM:** Evolution Foundation Models API  
+**Agent / Tooling:** MCP, FastMCP  
+**Validation:** Pydantic  
+**HTTP:** httpx  
+**Configuration:** python-dotenv  
+**Data:** CSV
 
-### Требования
+## Installation
 
-- Python 3.9+
-- Evolution Foundation Models API ключ
-
-### Шаги установки
-
-1. **Клонируйте репозиторий** (если применимо) или убедитесь, что все файлы на месте
-
-2. **Установите зависимости**:
 ```bash
+git clone https://github.com/Human221/resume-ml.git
+cd resume-ml
+
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. **Настройте переменные окружения**:
+Create the environment file:
+
 ```bash
 cp .env.example .env
 ```
 
-Отредактируйте `.env` файл и укажите:
-- `EVOLUTION_API_KEY` - ваш API ключ от Evolution Foundation Models
-- `EVOLUTION_API_BASE` - базовый URL API (по умолчанию: https://foundation-models.api.cloud.ru/v1/)
-- `EVOLUTION_MODEL` - модель для использования (по умолчанию: gpt-4o-mini)
-- `VACANCIES_CSV_PATH` - путь к CSV файлу с вакансиями
+Set the required API configuration in `.env` and provide a path to the vacancy dataset.
 
-4. **Проверьте наличие данных**:
-Убедитесь, что файл с вакансиями (`IT_vacancies_full 2.csv`) находится в корне проекта или укажите правильный путь в `.env`
+## Usage
 
-## 🧪 Тестирование
-
-### Тест MCP-сервера
-
-Проверка работы MCP-сервера напрямую:
-```bash
-python test_mcp.py
-```
-
-### Тест агента
-
-Проверка работы полного агента:
-```bash
-python test_agent.py
-```
-
-## 💻 Использование
-
-### Базовое использование
+Example request:
 
 ```python
 import asyncio
 from agent.hr_vacancies_agent import HRVacanciesAgent
 
+
 async def main():
     agent = HRVacanciesAgent()
-    
-    # Запрос на естественном языке
-    query = "Найди вакансии Python разработчика с зарплатой от 100000 до 200000 рублей"
-    
-    result = await agent.process_query(query)
+    result = await agent.process_query(
+        "Найди вакансии Python разработчика с зарплатой от 100000 до 200000 рублей"
+    )
     print(result)
+
 
 asyncio.run(main())
 ```
 
-### Примеры запросов
+Run the available tests:
 
-- "Найди вакансии Python разработчика в Москве"
-- "Покажи статистику по вакансиям программиста"
-- "Сравни вакансии с ID 12345 и 67890"
-- "Найди вакансии с зарплатой от 150000 рублей и опытом от 3 лет"
-
-## 🔧 Интеграция с Evolution AI Agents
-
-### Требования для деплоя:
-
-1. **tools.json** - файл с описанием инструментов (уже включен)
-2. **.env** - файл с переменными окружения
-3. **Совместимость с A2A протоколом** - агент возвращает ответы в формате A2A
-
-### Формат ответа A2A:
-
-```json
-{
-  "response": {
-    "content": "Текст ответа агента",
-    "type": "text"
-  },
-  "metadata": {},
-  "status": "success"
-}
+```bash
+python test_mcp.py
+python test_agent.py
 ```
 
-## 📁 Структура проекта
+## Project Structure
 
-```
+```text
 resume-ml/
-├── mcp_server/
-│   └── vacancies_mcp.py          # MCP-сервер для работы с вакансиями
 ├── agent/
-│   └── hr_vacancies_agent.py     # AI-агент
-├── requirements.txt               # Зависимости Python
-├── .env.example                   # Пример конфигурации
-├── .env                           # Ваша конфигурация (создайте из .env.example)
-├── tools.json                     # Описание инструментов для платформы
-├── test_mcp.py                    # Тесты MCP-сервера
-├── test_agent.py                  # Тесты агента
-└── README.md                      # Документация
+│   └── hr_vacancies_agent.py
+├── mcp_server/
+│   └── vacancies_mcp.py
+├── test_agent.py
+├── test_mcp.py
+├── tools.json
+├── requirements.txt
+├── requirements-train.txt
+├── .env.example
+└── README.md
 ```
 
-## 🛡️ Обработка ошибок
+Additional deployment and training notes are kept in the repository as separate guides.
 
-Решение включает обработку следующих типов ошибок:
+## What I Worked On
 
-- **Сетевые ошибки**: Таймауты и проблемы с подключением к API
-- **Валидация данных**: Проверка входных параметров через Pydantic
-- **Отсутствие данных**: Корректная обработка случаев, когда вакансии не найдены
-- **Некорректные запросы**: Валидация диапазонов и обязательных полей
+The project demonstrates practical work with:
 
-## 📊 Примеры использования в бизнесе
+- LLM API integration
+- Tool calling
+- MCP server/client interaction
+- Async Python
+- Structured tool schemas
+- Input validation
+- Error handling
+- Agent-to-tool orchestration
 
-1. **Рекрутеры**: Быстрый поиск подходящих кандидатов по требованиям вакансии
-2. **HR-аналитики**: Анализ рынка труда и трендов в зарплатах
-3. **Менеджеры по найму**: Сравнение предложений от разных работодателей
-4. **HR-отделы**: Автоматизация рутинных задач по поиску и анализу вакансий
+## Limitations
 
-## 🎓 Обучение модели на Cloud.ru
+This repository is an educational case project rather than a production HR platform. The repository does not claim production-scale usage or measured business impact.
 
-**🖥️ Сервер:** 176.109.111.108
+## License
 
-**⚠️ ВАЖНО:** Все команды обучения выполняются НА СЕРВЕРЕ, а не на Mac!
-См. [IMPORTANT_README.md](IMPORTANT_README.md) для понимания разницы.
-
-**📖 Инструкции:**
-- [IMPORTANT_README.md](IMPORTANT_README.md) - **НАЧНИТЕ ОТСЮДА!** Где выполнять команды
-- [SERVER_SETUP.md](SERVER_SETUP.md) - настройка сервера (выполнять НА СЕРВЕРЕ)
-- [CLOUDRU_QUICKSTART.md](CLOUDRU_QUICKSTART.md) - быстрый старт обучения (НА СЕРВЕРЕ)
-- [CLOUDRU_TRAINING.md](CLOUDRU_TRAINING.md) - подробная инструкция (НА СЕРВЕРЕ)
-
-Для обучения модели на мощностях Cloud.ru используйте скрипт `train_model.py`:
-
-```bash
-# Установите зависимости для обучения
-pip install -r requirements-train.txt
-
-# Обучение с датасетом Hugging Face (рекомендуется)
-python train_model.py \
-    --model-name IlyaGusev/saiga_mistral_7b_merged \
-    --use-hf \
-    --hf-dataset evilfreelancer/headhunter \
-    --output-dir ./models/finetuned \
-    --num-epochs 3 \
-    --batch-size 4
-
-# Или с локальным CSV файлом
-python train_model.py \
-    --model-name IlyaGusev/saiga_mistral_7b_merged \
-    --csv-path "IT_vacancies_full 2.csv" \
-    --output-dir ./models/finetuned \
-    --num-epochs 3 \
-    --batch-size 4
-```
-
-**Проверка датасета Hugging Face:**
-```bash
-# Посмотреть доступные splits
-python download_hf_dataset.py --dataset evilfreelancer/headhunter --action list
-
-# Посмотреть образцы данных
-python download_hf_dataset.py --dataset evilfreelancer/headhunter --action sample
-```
-
-Подробные инструкции см. в [TRAINING.md](TRAINING.md)
-
-## 📦 Деплой в Git
-
-Репозиторий уже инициализирован. Для публикации:
-
-```bash
-# Добавьте remote репозиторий
-git remote add origin <URL_вашего_репозитория>
-
-# Отправьте код
-git push -u origin main
-```
-
-Подробные инструкции см. в [GIT_DEPLOY.md](GIT_DEPLOY.md)
-
-## 🔄 Расширение функциональности
-
-Решение легко расширяется:
-
-- Добавление новых инструментов в MCP-сервер
-- Интеграция с другими источниками данных (API, базы данных)
-- Добавление новых типов анализа (прогнозирование, кластеризация)
-- Интеграция с CRM-системами
-
-## 📝 Лицензия
-
-Решение подготовлено для использования в образовательных целях в рамках кейса Changellenge >> и Cloud.ru.
-
-## 🤝 Поддержка
-
-При возникновении проблем:
-
-1. Проверьте наличие всех зависимостей: `pip install -r requirements.txt`
-2. Убедитесь, что `.env` файл настроен корректно
-3. Проверьте доступность Evolution Foundation Models API
-4. Запустите тесты для диагностики: `python test_mcp.py` и `python test_agent.py`
-
-## 🎓 Образовательный контекст
-
-Это решение разработано в рамках кейса "MCP for Business AI Transformation" от Changellenge >> и Cloud.ru для демонстрации возможностей создания бизнес-ориентированных AI-агентов с использованием MCP-протокола.
-
+Educational project created for the Changellenge >> / Cloud.ru case.
